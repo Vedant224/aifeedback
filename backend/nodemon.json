@@ -1,0 +1,6 @@
+{
+  "watch": ["**/*.ts"],
+  "ignore": ["node_modules", "dist"],
+  "exec": "ts-node --esm server.ts",
+  "ext": "ts"
+}
