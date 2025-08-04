@@ -4,15 +4,11 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import feedbackService from '../services/feedbackService.js';
 import logger from '../utils/logger.js';
 
-// @desc    Get all feedback items
-// @route   GET /api/feedback
-// @access  Private
 export const getAllFeedback = asyncHandler(async (
   req: Request,
   res: Response,
   __next: NextFunction
 ): Promise<void> => {
-  // Parse query parameters
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const status = req.query.status as FeedbackStatus | undefined;
@@ -36,9 +32,6 @@ export const getAllFeedback = asyncHandler(async (
   });
 });
 
-// @desc    Create new feedback
-// @route   POST /api/feedback
-// @access  Private
 export const createFeedback = asyncHandler(async (
   req: Request,
   res: Response,
@@ -66,9 +59,6 @@ export const createFeedback = asyncHandler(async (
   });
 });
 
-// @desc    Get feedback by ID
-// @route   GET /api/feedback/:id
-// @access  Private
 export const getFeedbackById = asyncHandler(async (
   req: Request,
   res: Response,
@@ -88,9 +78,6 @@ export const getFeedbackById = asyncHandler(async (
   });
 });
 
-// @desc    Update feedback
-// @route   PUT /api/feedback/:id
-// @access  Private
 export const updateFeedback = asyncHandler(async (
   req: Request,
   res: Response,
@@ -120,9 +107,6 @@ export const updateFeedback = asyncHandler(async (
   });
 });
 
-// @desc    Delete feedback
-// @route   DELETE /api/feedback/:id
-// @access  Private
 export const deleteFeedback = asyncHandler(async (
   req: Request,
   res: Response,
@@ -144,9 +128,6 @@ export const deleteFeedback = asyncHandler(async (
   });
 });
 
-// @desc    Upvote feedback
-// @route   PATCH /api/feedback/:id/upvote
-// @access  Private
 export const upvoteFeedback = asyncHandler(async (
   req: Request,
   res: Response,

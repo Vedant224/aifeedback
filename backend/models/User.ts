@@ -36,7 +36,7 @@ const UserSchema = new Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters long'],
-      select: false, // Don't return password by default
+      select: false,
     },
     role: {
       type: String,
@@ -47,9 +47,7 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
 UserSchema.pre('save', async function (next) {
-  // Only hash the password if it's modified or new
   if (!this.isModified('password')) {return next();}
   
   try {
@@ -61,7 +59,6 @@ UserSchema.pre('save', async function (next) {
   }
 });
 
-// Method to compare password
 UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };

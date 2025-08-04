@@ -18,12 +18,11 @@ export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  __next: NextFunction
 ) => {
   let error = { ...err };
   error.message = err.message;
   
-  // Log detailed error information
   const errorDetails = {
     method: req.method,
     path: req.path,
@@ -33,33 +32,28 @@ export const errorHandler = (
     isOperational: err.isOperational,
   };
   
-  // Log error with appropriate level based on status code
   if (err.statusCode >= 500 || !err.statusCode) {
     logger.error('Server error:', errorDetails);
   } else if (err.statusCode >= 400) {
     logger.warn('Client error:', errorDetails);
   }
   
-  // Mongoose duplicate key error
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
     const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
     error = new AppError(message, 400);
   }
   
-  // Mongoose validation error
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map((val: any) => val.message);
     error = new AppError(messages.join(', '), 400);
   }
   
-  // Mongoose cast error (invalid ID)
   if (err.name === 'CastError') {
     const message = `Invalid ${err.path}: ${err.value}`;
     error = new AppError(message, 400);
   }
   
-  // Respond with appropriate error message
   res.status(error.statusCode || 500).json({
     status: 'error',
     message: error.message || 'Internal server error',

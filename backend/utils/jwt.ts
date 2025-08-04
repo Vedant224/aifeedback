@@ -1,11 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { AppError } from '../middleware/errorHandler.js';
 
-/**
- * Generate JWT token
- * @param id User ID to encode in the token
- * @returns JWT token string
- */
 export const generateToken = (id: string): string => {
   const secret = process.env.JWT_SECRET;
   
@@ -20,11 +15,6 @@ export const generateToken = (id: string): string => {
   );
 };
 
-/**
- * Verify JWT token
- * @param token JWT token to verify
- * @returns Decoded token payload
- */
 export const verifyToken = (token: string): jwt.JwtPayload | string => {
   const secret = process.env.JWT_SECRET;
   

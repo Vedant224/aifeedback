@@ -15,7 +15,6 @@ import { requestLogger } from '../middleware/logger.js';
 
 const router = express.Router();
 
-// Apply request logging middleware
 router.use(requestLogger);
 
 // Protect all routes

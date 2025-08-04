@@ -13,11 +13,11 @@ export const processAiQuery = asyncHandler(async (
   const userId = req.user.id;
   
   if (!prompt || typeof prompt !== 'string') {
-    throw new AppError('Valid prompt is required', 400); // Using AppError here
+    throw new AppError('Valid prompt is required', 400);
   }
   
   if (prompt.length > 500) {
-    throw new AppError('Prompt cannot exceed 500 characters', 400); // Using AppError here
+    throw new AppError('Prompt cannot exceed 500 characters', 400);
   }
   
   logger.info(`Processing AI query from user: ${userId}`);

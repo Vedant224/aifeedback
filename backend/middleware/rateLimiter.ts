@@ -4,8 +4,8 @@ import logger from '../utils/logger.js';
 
 // General API rate limiter
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res, next) => {
@@ -14,10 +14,9 @@ export const apiLimiter = rateLimit({
   }
 });
 
-// More strict limiter for authentication routes
 export const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Limit each IP to 10 auth attempts per hour
+  windowMs: 60 * 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res, next) => {
@@ -26,10 +25,9 @@ export const authLimiter = rateLimit({
   }
 });
 
-// Specific limiter for AI queries
 export const aiLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // Limit each IP to 20 AI queries per hour
+  windowMs: 60 * 60 * 1000, 
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res, next) => {

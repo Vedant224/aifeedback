@@ -9,22 +9,17 @@ interface UserServiceResult {
   token: string;
 }
 
-/**
- * Register a new user
- */
 async function registerUser(
   name: string,
   email: string,
   password: string
 ): Promise<UserServiceResult> {
-  // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     logger.warn(`Registration failed: Email already exists - ${email}`);
     throw new AppError('User already exists', 400);
   }
 
-  // Create user
   const user = await User.create({
     name,
     email,
@@ -36,20 +31,15 @@ async function registerUser(
     throw new AppError('Invalid user data', 400);
   }
 
-  // Generate token
   const token = generateToken(user._id.toString());
 
   return { user, token };
 }
 
-/**
- * Login a user
- */
 async function loginUser(
   email: string,
   password: string
 ): Promise<UserServiceResult> {
-  // Find user
   const user = await User.findOne({ email }).select('+password');
   
   if (!user) {
@@ -57,28 +47,22 @@ async function loginUser(
     throw new AppError('Invalid credentials', 401);
   }
 
-  // Check password
   const isPasswordMatch = await user.comparePassword(password);
   if (!isPasswordMatch) {
     logger.warn(`Login failed: Incorrect password - ${email}`);
     throw new AppError('Invalid credentials', 401);
   }
 
-  // Generate token
   const token = generateToken(user._id.toString());
 
   return { user, token };
 }
 
-/**
- * Update user profile
- */
 async function updateUserProfile(
   userId: string,
   name?: string,
   email?: string
 ): Promise<UserDocument> {
-  // Find user
   const user = await User.findById(userId);
 
   if (!user) {
@@ -86,10 +70,8 @@ async function updateUserProfile(
     throw new AppError('User not found', 404);
   }
 
-  // Update fields if provided
   if (name) {user.name = name;}
   if (email) {
-    // Check if email already exists for a different user
     if (email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -100,7 +82,6 @@ async function updateUserProfile(
     }
   }
 
-  // Save user
   return user.save();
 }
 

@@ -1,7 +1,6 @@
 import { body, param, ValidationChain } from 'express-validator';
 import { FeedbackCategory, FeedbackStatus } from '../models/Feedback.js';
 
-// User validation chains
 export const userValidation = {
   register: [
     body('name')
@@ -31,7 +30,6 @@ export const userValidation = {
   ]
 };
 
-// Feedback validation chains
 export const feedbackValidation = {
   create: [
     body('title')
@@ -70,7 +68,6 @@ export const feedbackValidation = {
   ]
 };
 
-// AI validation chains
 export const aiValidation = {
   query: [
     body('prompt')
@@ -80,7 +77,6 @@ export const aiValidation = {
   ]
 };
 
-// MongoDB ID validator
 export const validateMongoId = (paramName: string = 'id'): ValidationChain => {
   return param(paramName)
     .isMongoId()

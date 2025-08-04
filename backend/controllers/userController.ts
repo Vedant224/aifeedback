@@ -3,9 +3,6 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import userService from '../services/userService.js';
 import logger from '../utils/logger.js';
 
-// @desc    Register new user
-// @route   POST /api/users/register
-// @access  Public
 export const registerUser = asyncHandler(async (
   req: Request,
   res: Response,
@@ -33,9 +30,6 @@ export const registerUser = asyncHandler(async (
   });
 });
 
-// @desc    Login user
-// @route   POST /api/users/login
-// @access  Public
 export const loginUser = asyncHandler(async (
   req: Request,
   res: Response,
@@ -63,9 +57,6 @@ export const loginUser = asyncHandler(async (
   });
 });
 
-// @desc    Get user profile
-// @route   GET /api/users/profile
-// @access  Private
 export const getUserProfile = asyncHandler(async (
   req: Request,
   res: Response,
@@ -81,9 +72,6 @@ export const getUserProfile = asyncHandler(async (
   });
 });
 
-// @desc    Update user profile
-// @route   PUT /api/users/profile
-// @access  Private
 export const updateUserProfile = asyncHandler(async (
   req: Request,
   res: Response,

@@ -23,7 +23,6 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Get token from header
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -31,20 +30,17 @@ export const authenticate = async (
       throw new AppError('Authentication required', 401);
     }
     
-    // Verify token
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
     
-    // Find user
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
       throw new AppError('User not found', 404);
     }
     
-    // Attach user to request
     req.user = user;
     
     next();

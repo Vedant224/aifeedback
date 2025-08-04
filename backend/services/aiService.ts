@@ -5,7 +5,7 @@ import logger from '../utils/logger.js';
 class GeminiClient {
   private static instance: GeminiClient;
   private genAI: GoogleGenerativeAI;
-  private model: any; // Using 'any' to avoid type issues
+  private model: any; 
   
   private constructor() {
     if (!process.env.GEMINI_API_KEY) {
@@ -29,7 +29,6 @@ class GeminiClient {
   }
 }
 
-// System prompt for consistent AI interactions
 const getSystemPrompt = (): string => {
   return `
   You are a helpful AI assistant for a feedback tracking system. Your role is to:
@@ -47,15 +46,12 @@ const getSystemPrompt = (): string => {
   `;
 };
 
-// Response validation interface
 interface ValidationResult {
   isValid: boolean;
   reason?: string;
 }
 
-// Response validator class
 class ResponseValidator {
-  // Validate response contains helpful information
   static validateHelpfulness(response: string): ValidationResult {
     const minLength = 20;
     if (response.length < minLength) {
@@ -65,7 +61,6 @@ class ResponseValidator {
       };
     }
     
-    // Check for non-helpful responses using regex patterns
     const nonHelpfulPatterns = [
       /I cannot answer|I don't have enough information|I'm not able to provide/i,
       /As an AI|As a language model/i,
@@ -83,15 +78,12 @@ class ResponseValidator {
     return { isValid: true };
   }
   
-  // Validate response is relevant to feedback systems
   static validateRelevance(response: string, prompt: string): ValidationResult {
-    // Keywords related to feedback systems
     const feedbackKeywords = [
       'feedback', 'suggestion', 'improvement', 'feature', 'bug', 'issue',
       'track', 'status', 'priority', 'category', 'report', 'user experience'
     ];
     
-    // Check if response contains at least one feedback-related keyword
     const hasKeyword = feedbackKeywords.some(keyword => 
       response.toLowerCase().includes(keyword.toLowerCase())
     );
@@ -106,37 +98,30 @@ class ResponseValidator {
     return { isValid: true };
   }
   
-  // Master validation function that runs all checks
   static validateResponse(response: string, prompt: string): ValidationResult {
-    // Run helpfulness validation
     const helpfulnessValidation = this.validateHelpfulness(response);
     if (!helpfulnessValidation.isValid) {
       return helpfulnessValidation;
     }
     
-    // Run relevance validation
     const relevanceValidation = this.validateRelevance(response, prompt);
     if (!relevanceValidation.isValid) {
       return relevanceValidation;
     }
     
-    // All validations passed
     return { isValid: true };
   }
 }
 
-// Generate AI response with retry and validation
 export const generateAiResponse = async (prompt: string): Promise<string> => {
   try {
     const client = GeminiClient.getInstance();
     const model = client.getModel();
     
-    // Combine system prompt with user prompt
     const fullPrompt = `${getSystemPrompt()}\n\nUser question: ${prompt}`;
     
     logger.info(`Generating AI response for prompt: "${prompt.substring(0, 30)}..."`);
     
-    // First attempt with standard parameters
     try {
       const result = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
@@ -166,13 +151,11 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
       
       const response = result.response.text();
       
-      // Validate the response
       const validationResult = ResponseValidator.validateResponse(response, prompt);
       
       if (!validationResult.isValid) {
         logger.warn(`AI response validation failed: ${validationResult.reason}. Retrying with refined prompt.`);
         
-        // Try again with more specific instructions
         try {
           const refinedPrompt = `
           ${getSystemPrompt()}
@@ -185,14 +168,13 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
           const refinedResult = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: refinedPrompt }] }],
             generationConfig: {
-              temperature: 0.1, // Lower temperature for more focused response
+              temperature: 0.1, 
               maxOutputTokens: 300,
             }
           });
           
           const refinedAnswer = refinedResult.response.text();
           
-          // If still invalid, return a fallback response
           const secondValidation = ResponseValidator.validateResponse(refinedAnswer, prompt);
           if (!secondValidation.isValid) {
             logger.warn(`Second AI response validation failed: ${secondValidation.reason}. Using fallback response.`);
@@ -214,7 +196,6 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
   } catch (error) {
     logger.error('Error generating AI response:', error);
     
-    // Fallback response if model fails
     return `I understand you're asking about "${prompt}". This appears to be related to feedback tracking, but I couldn't generate a specific response. Please try rephrasing your question.`;
   }
 };

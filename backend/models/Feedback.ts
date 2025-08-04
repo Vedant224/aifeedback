@@ -64,7 +64,6 @@ const FeedbackSchema = new Schema(
   { timestamps: true }
 );
 
-// Index for faster queries
 FeedbackSchema.index({ userId: 1 });
 FeedbackSchema.index({ category: 1 });
 FeedbackSchema.index({ status: 1 });

@@ -12,14 +12,11 @@ import aiRoutes from './routes/aiRoutes.js';
 import logger from './utils/logger.js';
 import connectDB from './config/database.js';
 
-// Load environment variables
 dotenv.config();
 
-// Initialize express app
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
-// Connect to MongoDB
 connectDB()
   .then(() => {
     logger.info('Connected to MongoDB');
@@ -30,11 +27,10 @@ connectDB()
   });
 
 // Middleware
-app.use(morgan('dev')); // Logging HTTP requests
-app.use(helmet()); // Security headers
-app.use(compression()); // Compress responses
+app.use(morgan('dev')); 
+app.use(helmet()); 
+app.use(compression()); 
 
-// CORS configuration
 app.use(
   cors({
     origin: process.env.NODE_ENV === 'production' 
@@ -46,10 +42,9 @@ app.use(
   })
 );
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false
 });
