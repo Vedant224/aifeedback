@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
     if (!name || !email || !password) {
       toast.error('All fields are required');
       return;
@@ -36,7 +35,6 @@ export default function RegisterPage() {
     try {
       setIsLoading(true);
       
-      // Register user
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
         method: 'POST',
         headers: {
@@ -57,7 +55,6 @@ export default function RegisterPage() {
       
       toast.success('Registration successful');
       
-      // Auto login after registration
       await signIn('credentials', {
         redirect: false,
         email,

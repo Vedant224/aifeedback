@@ -2,14 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import StatusBadge from './StatusBadge';
 
-// Define the user type
 interface User {
   _id: string;
   name: string;
   email?: string;
 }
 
-// Define the feedback item structure
 interface FeedbackItem {
   _id: string;
   title: string;
@@ -21,13 +19,11 @@ interface FeedbackItem {
   userId?: User | null;
 }
 
-// Define props for the FeedbackList component
 interface FeedbackListProps {
   feedbackItems: FeedbackItem[];
   onFeedbackUpdated?: (updatedFeedback: FeedbackItem) => void;
 }
 
-// Define props for the FeedbackItem component
 interface FeedbackItemProps {
   feedback: FeedbackItem;
   onFeedbackUpdated?: (updatedFeedback: FeedbackItem) => void;

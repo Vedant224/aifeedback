@@ -32,7 +32,6 @@ export default function AiQueryBox() {
       
       setResponse(data.data.answer);
       
-      // Scroll to response
       setTimeout(() => {
         if (responseRef.current) {
           responseRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -47,7 +46,6 @@ export default function AiQueryBox() {
     }
   };
 
-  // Add suggestions for users
   const suggestions = [
     "How do I categorize bug reports?",
     "What's the best way to prioritize feedback?",
@@ -88,7 +86,6 @@ export default function AiQueryBox() {
         </button>
       </form>
       
-      {/* Suggestions */}
       {!response && !isLoading && (
         <div className="mt-6">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Try asking:</h3>

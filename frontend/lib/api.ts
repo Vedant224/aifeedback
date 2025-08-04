@@ -10,7 +10,6 @@ export async function fetchWithAuth(endpoint: string, options?: RequestInit) {
       throw new Error('No authentication token found');
     }
     
-    // Add /api prefix if not already present and not a full URL
     const formattedEndpoint = endpoint.startsWith('http') 
       ? endpoint 
       : endpoint.startsWith('/api') 

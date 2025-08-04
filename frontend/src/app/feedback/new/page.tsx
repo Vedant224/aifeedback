@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import FeedbackForm from '@/../components/feedback/FeedbackForm';
 import { fetchWithAuth } from '@/../lib/api';
 
-// Define the type for feedback data
 interface FeedbackData {
   title: string;
   description: string;
@@ -20,7 +19,6 @@ export default function NewFeedbackPage() {
   const { status } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Handle form submission with proper type annotation
   const handleSubmit = async (feedbackData: FeedbackData) => {
     try {
       setIsSubmitting(true);
@@ -41,7 +39,6 @@ export default function NewFeedbackPage() {
     }
   };
   
-  // Redirect if not authenticated
   if (status === 'unauthenticated') {
     router.push('/login');
     return null;

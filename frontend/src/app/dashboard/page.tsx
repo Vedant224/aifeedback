@@ -10,7 +10,6 @@ import AiQueryBox from '@/../components/ai/AiQueryBox';
 import LoadingSpinner from '@/../components/ui/LoadingSpinner';
 import { fetchWithAuth } from '@/../lib/api';
 
-// Define types for the filter
 interface FeedbackFilter {
   status: string;
   category: string;
@@ -26,21 +25,18 @@ export default function DashboardPage() {
     category: '',
   });
   
-  // Redirect if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
   
-  // Fetch feedback items
   useEffect(() => {
     const getFeedback = async () => {
       if (status === 'authenticated') {
         try {
           setIsLoading(true);
           
-          // Build query string from filters
           const queryParams = new URLSearchParams();
           if (filter.status) queryParams.append('status', filter.status);
           if (filter.category) queryParams.append('category', filter.category);
@@ -58,7 +54,6 @@ export default function DashboardPage() {
     getFeedback();
   }, [status, filter]);
   
-  // Handle filter changes with proper type annotation
   const handleFilterChange = (newFilter: FeedbackFilter) => {
     setFilter(newFilter);
   };
@@ -87,7 +82,6 @@ export default function DashboardPage() {
           <FeedbackList 
             feedbackItems={feedbackItems} 
             onFeedbackUpdated={() => {
-              // Refresh the list when feedback is updated
               const getFeedback = async () => {
                 const data = await fetchWithAuth('/feedback');
                 setFeedbackItems(data.data.feedback);

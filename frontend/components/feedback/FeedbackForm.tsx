@@ -2,14 +2,12 @@
 
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 
-// Define feedback data structure
 interface FeedbackData {
   title: string;
   description: string;
   category: 'bug' | 'feature' | 'improvement';
 }
 
-// Define component props
 interface FeedbackFormProps {
   onSubmit: (data: FeedbackData) => void;
   isSubmitting: boolean;

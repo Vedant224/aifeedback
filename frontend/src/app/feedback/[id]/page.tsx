@@ -8,7 +8,6 @@ import StatusBadge from '@/../components/feedback/StatusBadge';
 import LoadingSpinner from '@/../components/ui/LoadingSpinner';
 import { fetchWithAuth } from '@/../lib/api';
 
-// Define types for feedback
 interface User {
   name?: string;
 }
@@ -32,7 +31,6 @@ export default function FeedbackDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   
-  // Fetch feedback details
   useEffect(() => {
     const getFeedback = async () => {
       if (authStatus === 'authenticated') {
@@ -55,7 +53,6 @@ export default function FeedbackDetailPage() {
     }
   }, [params.id, authStatus, router]);
   
-  // Handle status update
   const updateStatus = async (newStatus: string) => {
     try {
       setIsUpdating(true);
@@ -78,7 +75,6 @@ export default function FeedbackDetailPage() {
     }
   };
   
-  // Handle upvote
   const handleUpvote = async () => {
     try {
       const data = await fetchWithAuth(`/feedback/${params.id}/upvote`, {
@@ -94,7 +90,6 @@ export default function FeedbackDetailPage() {
     }
   };
   
-  // Redirect if not authenticated
   if (authStatus === 'unauthenticated') {
     router.push('/login');
     return null;

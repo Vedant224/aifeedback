@@ -1,9 +1,7 @@
 import React from 'react';
 
-// Define the possible status values as a union type
 type FeedbackStatus = 'open' | 'in-progress' | 'resolved' | string;
 
-// Define props interface
 interface StatusBadgeProps {
   status: FeedbackStatus;
 }

@@ -15,7 +15,6 @@ export function useFeedback(filters?: FeedbackFilters) {
         setIsLoading(true);
         setError(null);
         
-        // Build query string from filters
         const queryParams = new URLSearchParams();
         if (filters?.status) queryParams.append('status', filters.status);
         if (filters?.category) queryParams.append('category', filters.category);
@@ -38,7 +37,6 @@ export function useFeedback(filters?: FeedbackFilters) {
       setIsLoading(true);
       setError(null);
       
-      // Build query string from filters
       const queryParams = new URLSearchParams();
       if (filters?.status) queryParams.append('status', filters.status);
       if (filters?.category) queryParams.append('category', filters.category);

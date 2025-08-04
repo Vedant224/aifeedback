@@ -1,12 +1,10 @@
 import React from 'react';
 
-// Define filter structure
 interface FilterState {
   status: string;
   category: string;
 }
 
-// Define component props
 interface FeedbackFilterProps {
   currentFilter: FilterState;
   onFilterChange: (filter: FilterState) => void;

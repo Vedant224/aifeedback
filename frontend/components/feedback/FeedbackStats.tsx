@@ -1,18 +1,15 @@
 import React from 'react';
 
-// Define feedback item structure
 interface FeedbackItem {
   _id: string;
   status: 'open' | 'in-progress' | 'resolved';
   category: 'bug' | 'feature' | 'improvement';
 }
 
-// Define props for FeedbackStats component
 interface FeedbackStatsProps {
   feedbackItems: FeedbackItem[];
 }
 
-// Define props for StatCard component
 interface StatCardProps {
   title: string;
   value: number;
