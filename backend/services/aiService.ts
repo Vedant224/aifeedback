@@ -1,5 +1,35 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import logger from '../utils/logger.js';
+import Feedback from '../models/Feedback.js';
+
+// Enum for feedback status if not already defined
+enum FeedbackStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in-progress',
+  RESOLVED = 'resolved'
+}
+
+// Define interfaces to avoid 'any' types
+interface FeedbackItem {
+  _id: any;
+  text?: string;
+  status?: string;
+  category?: string;
+  rating?: number;
+  createdAt: Date;
+  user?: {
+    name?: string;
+    email?: string;
+  };
+}
+
+interface StatusCount {
+  [key: string]: number;
+}
+
+interface CategoryCount {
+  [key: string]: number;
+}
 
 // Singleton instance for the Gemini client
 class GeminiClient {
@@ -13,7 +43,7 @@ class GeminiClient {
     }
     
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
   }
   
   public static getInstance(): GeminiClient {
@@ -29,21 +59,95 @@ class GeminiClient {
   }
 }
 
-const getSystemPrompt = (): string => {
-  return `
-  You are a helpful AI assistant for a feedback tracking system. Your role is to:
-  1. Answer questions about how to use the feedback system
-  2. Provide suggestions for categorizing and prioritizing feedback
-  3. Help users understand features and workflows
-  4. Be concise and specific in your responses
-  5. Only discuss topics related to feedback tracking and management
-  
-  The feedback system has the following features:
-  - Submit feedback items (bugs, features, improvements)
-  - Track status (open, in-progress, resolved)
-  - Upvote important feedback
-  - Categorize feedback by type
-  `;
+const getSystemPrompt = async (): Promise<string> =>{
+  // Fetch actual feedback data to provide context
+  try {
+    const recentFeedback = await Feedback.find({})
+      .sort({ createdAt: -1 })
+      .limit(15)
+      .lean();
+    
+    if (!recentFeedback || recentFeedback.length === 0) {
+      return `
+      You are a helpful AI assistant for a feedback tracking system. Your role is to:
+      1. Answer questions about how to use the feedback system
+      2. Provide suggestions for categorizing and prioritizing feedback
+      3. Help users understand features and workflows
+      4. Be concise and specific in your responses
+      
+      NOTE: There is currently no feedback data in the system to analyze.
+      
+      The feedback system has the following features:
+      - Submit feedback items (bugs, features, improvements)
+      - Track status (open, in-progress, resolved)
+      - Upvote important feedback
+      - Categorize feedback by type
+      `;
+    }
+    
+    // Format feedback data as context - safely accessing properties
+    const feedbackContext = recentFeedback.map((f: FeedbackItem, index) => 
+      `Feedback #${index + 1}:
+       - ID: ${f._id?.toString() || 'Unknown'}
+       - Status: ${f.status || 'open'}
+       - Category: ${f.category || 'Not specified'}
+       - Text: "${f.text || 'No description provided'}"
+       - Created: ${new Date(f.createdAt).toISOString()}`
+    ).join('\n\n');
+    
+    // Summary statistics - with proper type annotations
+    const statusCounts: StatusCount = {};
+    recentFeedback.forEach((f: FeedbackItem) => {
+      const status = f.status || 'open';
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+    
+    const categoryCounts: CategoryCount = {};
+    recentFeedback.forEach((f: FeedbackItem) => {
+      const category = f.category || 'uncategorized';
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+    
+    // Calculate average rating only if the field exists in your model
+    let avgRating = 'No ratings available';
+    const feedbackWithRatings = recentFeedback.filter((f: FeedbackItem) => typeof f.rating === 'number');
+    
+    if (feedbackWithRatings.length > 0) {
+      const sum = feedbackWithRatings.reduce((acc, f: FeedbackItem) => acc + (f.rating || 0), 0);
+      avgRating = (sum / feedbackWithRatings.length).toFixed(1);
+    }
+    
+    return `
+    You are a helpful AI assistant for a feedback tracking system. Your role is to:
+    1. Answer questions about the feedback data in the system
+    2. Analyze trends and patterns in the feedback
+    3. Provide insights based on the feedback content
+    4. Be specific and reference actual feedback when answering questions
+    
+    FEEDBACK DATA SUMMARY:
+    - Total feedback entries: ${recentFeedback.length}
+    - Status distribution: ${JSON.stringify(statusCounts)}
+    - Category distribution: ${JSON.stringify(categoryCounts)}
+    - Average rating: ${avgRating}
+    
+    RECENT FEEDBACK ENTRIES:
+    ${feedbackContext}
+    
+    When answering questions about feedback, use this actual data to provide specific insights and examples.
+    `;
+    
+  } catch (error) {
+    logger.error('Error fetching feedback data for AI context:', error);
+    return `
+    You are a helpful AI assistant for a feedback tracking system. Your role is to:
+    1. Answer questions about how to use the feedback system
+    2. Provide suggestions for categorizing and prioritizing feedback
+    3. Help users understand features and workflows
+    4. Be concise and specific in your responses
+    
+    NOTE: Unable to access feedback data at this time.
+    `;
+  }
 };
 
 interface ValidationResult {
@@ -61,52 +165,13 @@ class ResponseValidator {
       };
     }
     
-    const nonHelpfulPatterns = [
-      /I cannot answer|I don't have enough information|I'm not able to provide/i,
-      /As an AI|As a language model/i,
-    ];
-    
-    for (const pattern of nonHelpfulPatterns) {
-      if (pattern.test(response) && response.length < 100) {
-        return { 
-          isValid: false, 
-          reason: 'Response contains refusal or disclaimer without providing useful information' 
-        };
-      }
-    }
-    
     return { isValid: true };
   }
   
-  static validateRelevance(response: string, prompt: string): ValidationResult {
-    const feedbackKeywords = [
-      'feedback', 'suggestion', 'improvement', 'feature', 'bug', 'issue',
-      'track', 'status', 'priority', 'category', 'report', 'user experience'
-    ];
-    
-    const hasKeyword = feedbackKeywords.some(keyword => 
-      response.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
-    if (!hasKeyword && prompt.length > 15) {
-      return { 
-        isValid: false, 
-        reason: "Response doesn't contain any feedback-related keywords" 
-      };
-    }
-    
-    return { isValid: true };
-  }
-  
-  static validateResponse(response: string, prompt: string): ValidationResult {
+  static validateResponse(response: string): ValidationResult {
     const helpfulnessValidation = this.validateHelpfulness(response);
     if (!helpfulnessValidation.isValid) {
       return helpfulnessValidation;
-    }
-    
-    const relevanceValidation = this.validateRelevance(response, prompt);
-    if (!relevanceValidation.isValid) {
-      return relevanceValidation;
     }
     
     return { isValid: true };
@@ -118,7 +183,9 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
     const client = GeminiClient.getInstance();
     const model = client.getModel();
     
-    const fullPrompt = `${getSystemPrompt()}\n\nUser question: ${prompt}`;
+    // Get system prompt with feedback data context
+    const systemPrompt = await getSystemPrompt();
+    const fullPrompt = `${systemPrompt}\n\nUser question: ${prompt}`;
     
     logger.info(`Generating AI response for prompt: "${prompt.substring(0, 30)}..."`);
     
@@ -127,7 +194,7 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
         contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 300,
+          maxOutputTokens: 500,
         },
         safetySettings: [
           {
@@ -151,16 +218,16 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
       
       const response = result.response.text();
       
-      const validationResult = ResponseValidator.validateResponse(response, prompt);
+      const validationResult = ResponseValidator.validateResponse(response);
       
       if (!validationResult.isValid) {
         logger.warn(`AI response validation failed: ${validationResult.reason}. Retrying with refined prompt.`);
         
         try {
           const refinedPrompt = `
-          ${getSystemPrompt()}
+          ${systemPrompt}
           
-          IMPORTANT: Your response MUST be specifically about feedback tracking systems and be at least 50 characters long.
+          IMPORTANT: Your response MUST be helpful and at least 50 characters long. Reference specific feedback data when possible.
           
           User question: ${prompt}
           `;
@@ -169,19 +236,11 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
             contents: [{ role: "user", parts: [{ text: refinedPrompt }] }],
             generationConfig: {
               temperature: 0.1, 
-              maxOutputTokens: 300,
+              maxOutputTokens: 500,
             }
           });
           
-          const refinedAnswer = refinedResult.response.text();
-          
-          const secondValidation = ResponseValidator.validateResponse(refinedAnswer, prompt);
-          if (!secondValidation.isValid) {
-            logger.warn(`Second AI response validation failed: ${secondValidation.reason}. Using fallback response.`);
-            return `I understand you're asking about "${prompt}". This appears to be related to ${prompt.includes('feedback') ? 'feedback management' : 'our system features'}. Could you please provide more details so I can give you a more specific answer about our feedback tracking system?`;
-          }
-          
-          return refinedAnswer;
+          return refinedResult.response.text();
         } catch (refinedError) {
           logger.error('Error in refined AI response generation:', refinedError);
           throw refinedError;
@@ -196,7 +255,8 @@ export const generateAiResponse = async (prompt: string): Promise<string> => {
   } catch (error) {
     logger.error('Error generating AI response:', error);
     
-    return `I understand you're asking about "${prompt}". This appears to be related to feedback tracking, but I couldn't generate a specific response. Please try rephrasing your question.`;
+    // Improved fallback response
+    return `I understand you're asking about "${prompt}". Based on the feedback data in the system, I should be able to answer this, but I'm having technical difficulties. Try asking about specific feedback categories, overall sentiment, or recent feedback trends.`;
   }
 };
 
