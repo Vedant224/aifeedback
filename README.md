@@ -69,7 +69,7 @@ Get your connection string and add it to the .env file
 ## Step 3: Frontend Setup
 ```bash
 # Navigate to frontend directory from project root
-cd ../frontend
+cd frontend
 
 # Install dependencies
 npm install
