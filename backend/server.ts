@@ -17,6 +17,8 @@ dotenv.config();
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
+app.set('trust proxy', 1);
+
 connectDB()
   .then(() => {
     logger.info('Connected to MongoDB');
