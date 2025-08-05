@@ -2,12 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import logger from '../utils/logger.js';
 import Feedback from '../models/Feedback.js';
 
-// Enum for feedback status if not already defined
-enum FeedbackStatus {
-  OPEN = 'open',
-  IN_PROGRESS = 'in-progress',
-  RESOLVED = 'resolved'
-}
 
 // Define interfaces to avoid 'any' types
 interface FeedbackItem {
