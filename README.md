@@ -2,6 +2,9 @@
 
 A web application for collecting, managing, and analyzing feedback with AI-powered insights.
 
+## Images
+![Screenshot](screenshot/ss.png)
+
 ## Features
 
 - User Authentication
